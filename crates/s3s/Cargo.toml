@@ -29,6 +29,7 @@ http-body = "0.4.5"
 httparse = "1.8.0"
 hyper = { version = "0.14.27", features = ["stream"] }
 itoa = "1.0.9"
+lazy_static = "1.4.0"
 memchr = "2.6.2"
 mime = "0.3.17"
 nom = "7.1.3"

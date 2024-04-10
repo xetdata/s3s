@@ -5,7 +5,9 @@
 //! + [Request styles](https://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAPI.html#virtual-hosted-path-style-requests)
 //! + [Bucket nameing rules](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html)
 
-use std::net::IpAddr;
+use std::{net::IpAddr, sync::atomic::Ordering};
+
+use crate::service::DISABLE_CHECK_BUCKET_NAME;
 
 /// A path in the S3 storage
 #[derive(Debug, PartialEq, Eq)]
@@ -150,7 +152,7 @@ pub fn parse_path_style(uri_path: &str) -> Result<S3Path, ParseS3PathError> {
         Some((bucket, key)) => (bucket, Some(key)),
     };
 
-    if !check_bucket_name(bucket) {
+    if !DISABLE_CHECK_BUCKET_NAME.load(Ordering::Relaxed) && !check_bucket_name(bucket) {
         return Err(ParseS3PathError::InvalidBucketName);
     }
 
@@ -178,7 +180,7 @@ pub fn parse_virtual_hosted_style<'a>(base_domain: &str, host: &'a str, uri_path
         None => host.to_ascii_lowercase(),
     };
 
-    if !check_bucket_name(&bucket) {
+    if !DISABLE_CHECK_BUCKET_NAME.load(Ordering::Relaxed) && !check_bucket_name(&bucket) {
         return Err(ParseS3PathError::InvalidBucketName);
     }
 

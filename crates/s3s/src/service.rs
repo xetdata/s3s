@@ -5,12 +5,17 @@ use crate::s3_trait::S3;
 
 use std::convert::Infallible;
 use std::future::{ready, Ready};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::task::{Context, Poll};
 
 use futures::future::BoxFuture;
 use hyper::service::Service;
 use tracing::{debug, error};
+
+lazy_static::lazy_static! {
+    pub static ref DISABLE_CHECK_BUCKET_NAME: AtomicBool = AtomicBool::new(false);
+}
 
 pub struct S3ServiceBuilder {
     s3: Arc<dyn S3>,
@@ -34,6 +39,10 @@ impl S3ServiceBuilder {
 
     pub fn set_base_domain(&mut self, base_domain: impl Into<String>) {
         self.base_domain = Some(base_domain.into());
+    }
+
+    pub fn set_no_check_bucket_name(&self) {
+        DISABLE_CHECK_BUCKET_NAME.store(true, Ordering::Relaxed);
     }
 
     #[must_use]
